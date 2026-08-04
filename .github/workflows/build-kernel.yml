@@ -1,0 +1,52 @@
+name: Build excalibur Kernel
+
+on:
+  push:
+    branches:
+      - curtana
+  workflow_dispatch: # Allows you to manually trigger the build
+
+jobs:
+  build-kernel:
+    runs-on: ubuntu-22.04
+    
+    steps:
+    - name: Checkout Kernel Source
+      uses: actions/checkout@v4
+      
+    - name: Install Build Dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y git ccache automake flex lzop bison gperf build-essential zip curl zlib1g-dev g++-multilib libxml2-utils bzip2 libbz2-dev squashfs-tools pngcrush schedtool dpkg-dev liblz4-tool make optipng maven libssl-dev pwgen libswitch-perl policycoreutils minicom bc libc6-dev-i386 lib32ncurses5-dev x11proto-core-dev libx11-dev lib32z-dev libgl1-mesa-dev xsltproc unzip device-tree-compiler
+        
+    - name: Setup Proton Clang Toolchain
+      run: |
+        git clone --depth=1 https://github.com/kdrag0n/proton-clang.git clang
+        
+    - name: Compile Kernel
+      run: |
+        # Set environment variables for compilation
+        export PATH="$GITHUB_WORKSPACE/clang/bin:$PATH"
+        export ARCH=arm64
+        export SUBARCH=arm64
+        
+        # Clean previous builds just in case
+        rm -rf out
+        mkdir out
+        
+        # Generate configuration
+        make O=out ARCH=arm64 atoll-perf_defconfig
+        
+        # Build the kernel
+        make -j$(nproc --all) \
+          O=out \
+          ARCH=arm64 \
+          CC=clang \
+          CROSS_COMPILE=aarch64-linux-gnu- \
+          CROSS_COMPILE_ARM32=arm-linux-gnueabi-
+          
+    - name: Upload Kernel Image
+      uses: actions/upload-artifact@v4
+      with:
+        name: Compiled-Kernel-excalibur
+        path: out/arch/arm64/boot/Image.gz-dtb

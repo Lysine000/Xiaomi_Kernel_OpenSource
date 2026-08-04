@@ -8,7 +8,7 @@ on:
 
 jobs:
   build-kernel:
-    runs-on: ubuntu-22.04
+    runs-on: ubuntu-20.04
     
     steps:
     - name: Checkout Kernel Source
@@ -34,15 +34,19 @@ jobs:
         rm -rf out
         mkdir out
         
-        # Generate configuration (fixed path with vendor/)
+        # Generate configuration
         make O=out ARCH=arm64 vendor/atoll-perf_defconfig
         
-        # Build the kernel
+        # Build the kernel with strictly enforced LLVM tools
         make -j$(nproc --all) \
           O=out \
           ARCH=arm64 \
           CC=clang \
-          CLANG_TRIPLE=aarch64-linux-gnu- \
+          AR=llvm-ar \
+          NM=llvm-nm \
+          OBJCOPY=llvm-objcopy \
+          OBJDUMP=llvm-objdump \
+          STRIP=llvm-strip \
           CROSS_COMPILE=aarch64-linux-gnu- \
           CROSS_COMPILE_ARM32=arm-linux-gnueabi-
           

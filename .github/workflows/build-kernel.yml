@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - curtana
-  workflow_dispatch: # Allows you to manually trigger the build
+  workflow_dispatch:
 
 jobs:
   build-kernel:
@@ -34,8 +34,8 @@ jobs:
         rm -rf out
         mkdir out
         
-        # Generate configuration
-        make O=out ARCH=arm64 atoll-perf_defconfig
+        # Generate configuration (fixed path with vendor/)
+        make O=out ARCH=arm64 vendor/atoll-perf_defconfig
         
         # Build the kernel
         make -j$(nproc --all) \

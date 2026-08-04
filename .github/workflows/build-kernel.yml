@@ -1,3 +1,4 @@
+
 name: Build excalibur Kernel
 
 on:
@@ -17,7 +18,7 @@ jobs:
     - name: Install Build Dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y git ccache automake flex lzop bison gperf build-essential zip curl zlib1g-dev g++-multilib libxml2-utils bzip2 libbz2-dev squashfs-tools pngcrush schedtool dpkg-dev liblz4-tool make optipng maven libssl-dev pwgen libswitch-perl policycoreutils minicom bc libc6-dev-i386 lib32ncurses5-dev x11proto-core-dev libx11-dev lib32z-dev libgl1-mesa-dev xsltproc unzip device-tree-compiler
+        sudo apt-get install -y gcc-aarch64-linux-gnu gcc-arm-linux-gnueabi git ccache automake flex lzop bison gperf build-essential zip curl zlib1g-dev g++-multilib libxml2-utils bzip2 libbz2-dev squashfs-tools pngcrush schedtool dpkg-dev liblz4-tool make optipng maven libssl-dev pwgen libswitch-perl policycoreutils minicom bc libc6-dev-i386 lib32ncurses5-dev x11proto-core-dev libx11-dev lib32z-dev libgl1-mesa-dev xsltproc unzip device-tree-compiler
         
     - name: Setup Proton Clang Toolchain
       run: |
@@ -34,7 +35,7 @@ jobs:
         rm -rf out
         mkdir out
         
-        # Generate configuration (fixed path with vendor/)
+        # Generate configuration
         make O=out ARCH=arm64 vendor/atoll-perf_defconfig
         
         # Build the kernel
@@ -42,6 +43,7 @@ jobs:
           O=out \
           ARCH=arm64 \
           CC=clang \
+          CLANG_TRIPLE=aarch64-linux-gnu- \
           CROSS_COMPILE=aarch64-linux-gnu- \
           CROSS_COMPILE_ARM32=arm-linux-gnueabi-
           
